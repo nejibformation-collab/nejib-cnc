@@ -747,7 +747,7 @@
     if(window.supabase){ supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
   }catch(e){ console.error("Supabase init failed:", e); }
 
-  const DEFAULTS = { password:"nejib2026", phone:"55 597 555", email:"contact@nejibcnc.com", address:"Monastir 5000, Tunisie", mapUrl:"https://maps.app.goo.gl/ggxgxQbhzP5ALLFD7", theme:"atelier", logo:"./assets/logo-nejib-cnc.png", portrait:"./assets/nejib-portrait.jpg" };
+  const DEFAULTS = { password:"nejib2026", phone:"55 597 555", email:"contact@nejibcnc.com", address:"Monastir 5000, Tunisie", mapUrl:"https://maps.app.goo.gl/ggxgxQbhzP5ALLFD7", theme:"blanc", logo:"./assets/logo-nejib-cnc.png", portrait:"./assets/nejib-portrait.jpg" };
   let settingsCache = { ...DEFAULTS };
   let editMode = false;
 
@@ -970,16 +970,16 @@
 
     let fullMessage = msg;
     if(selectedItemData){
-      let itemLine = `Produit : ${selectedItemData.name}\nQuantité : ${selectedItemData.qty}`;
-      if(selectedItemData.hasPrice) itemLine += `\nTotal : ${selectedItemData.total} DT`;
-      if(selectedItemData.img) itemLine += `\nPhoto : ${selectedItemData.img}`;
+      let itemLine = `Project ${selectedItemData.name}\nQty ${selectedItemData.qty}`;
+      if(selectedItemData.hasPrice) itemLine += `\nTotal ${selectedItemData.total} DT`;
+      if(selectedItemData.img) itemLine += `\n${selectedItemData.img}`;
       fullMessage = itemLine + (msg ? `\n${msg}` : '');
     }
 
-    await saveInquiry(name, phone || email, fullMessage + (email ? `\nE-mail : ${email}` : ''), 'site-produits');
+    await saveInquiry(name, phone || email, fullMessage + (email ? `\nEmail ${email}` : ''), 'site-produits');
 
     const waPhone = getWhatsAppNumber();
-    const waText = encodeURIComponent(`Nouvelle demande de devis\nNom : ${name}${phone ? `\nTéléphone : ${phone}` : ''}${email ? `\nE-mail : ${email}` : ''}\n${fullMessage}`);
+    const waText = encodeURIComponent(`Hello👏\nMy name is ${name}${phone ? `\nTel ${phone}` : ''}${email ? `\nEmail ${email}` : ''}\n${fullMessage}`);
     window.open(`https://wa.me/${waPhone}?text=${waText}`, '_blank');
 
     alert("Merci ! Votre demande a été enregistrée. Vous allez être redirigé(e) vers WhatsApp pour l'envoyer directement à Nejib CNC.");
@@ -1013,14 +1013,12 @@
 
     const hidden = document.getElementById('selectedItem');
     const notice = document.getElementById('selectedItemNotice');
-    let noticeText = `Vous êtes intéressé(e) par : ${item.name} — Quantité : ${qty}`;
-    if(hasPrice) noticeText += ` — Total : ${total} DT`;
     if(hidden) hidden.value = item.name;
-    if(notice) notice.textContent = noticeText;
+    if(notice) notice.textContent = item.name;
 
     const msgEl = document.getElementById('msg');
     if(msgEl){
-      msgEl.value = `Intéressé par : ${item.name} — Quantité : ${qty}` + (hasPrice ? ` — Total : ${total} DT` : '');
+      msgEl.value = item.name;
     }
 
     const formEl = document.getElementById('contactForm');
@@ -1290,7 +1288,7 @@
 
   (async function init(){
     await loadSettings();
-    applyTheme(settingsCache.theme || 'atelier');
+    applyTheme(settingsCache.theme || 'blanc');
     renderContactInfo();
     renderContentBlocks();
     renderBranding();

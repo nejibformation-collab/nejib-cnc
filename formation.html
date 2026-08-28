@@ -678,7 +678,7 @@
     if(window.supabase){ supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
   }catch(e){ console.error("Supabase init failed:", e); }
 
-  const DEFAULTS = { password:"nejib2026", phone:"55 597 555", email:"contact@nejibcnc.com", address:"Monastir 5000, Tunisie", mapUrl:"https://maps.app.goo.gl/ggxgxQbhzP5ALLFD7", theme:"atelier", logo:"./assets/logo-nejib-cnc.png", portrait:"./assets/nejib-portrait.jpg" };
+  const DEFAULTS = { password:"nejib2026", phone:"55 597 555", email:"contact@nejibcnc.com", address:"Monastir 5000, Tunisie", mapUrl:"https://maps.app.goo.gl/ggxgxQbhzP5ALLFD7", theme:"blanc", logo:"./assets/logo-nejib-cnc.png", portrait:"./assets/nejib-portrait.jpg" };
   let settingsCache = { ...DEFAULTS };
   let editMode = false;
 
@@ -899,12 +899,12 @@
     const phone = document.getElementById('phone').value.trim();
 
     let itemLine = selectedItemData
-      ? `Formation : ${selectedItemData.name}\nQuantité : ${selectedItemData.qty}`
-      : `Formation : Stage éveil enfants`;
-    if(selectedItemData && selectedItemData.hasPrice) itemLine += `\nTotal : ${selectedItemData.total} DT`;
-    if(selectedItemData && selectedItemData.img) itemLine += `\nPhoto : ${selectedItemData.img}`;
+      ? `Formation ${selectedItemData.name}\nChild ${selectedItemData.qty}`
+      : `Formation Stage éveil enfants`;
+    if(selectedItemData && selectedItemData.hasPrice) itemLine += `\nTotal ${selectedItemData.total} DT`;
+    if(selectedItemData && selectedItemData.img) itemLine += `\n${selectedItemData.img}`;
 
-    const message = `Inscription — ${itemLine}\nParent : ${parentName}\nÂge enfant : ${childAge}\nTéléphone : ${phone}`;
+    const message = `Hello👏\n${itemLine}\nParent ${parentName}\nAge ${childAge}\nTel ${phone}`;
 
     await saveInquiry(parentName, phone, message, 'formation');
 
@@ -943,14 +943,12 @@
 
     const hidden = document.getElementById('selectedItem');
     const notice = document.getElementById('selectedItemNotice');
-    let noticeText = `Vous êtes intéressé(e) par : ${item.name} — Quantité : ${qty}`;
-    if(hasPrice) noticeText += ` — Total : ${total} DT`;
     if(hidden) hidden.value = item.name;
-    if(notice) notice.textContent = noticeText;
+    if(notice) notice.textContent = item.name;
 
     const msgEl = document.getElementById('msg');
     if(msgEl){
-      msgEl.value = `Intéressé par : ${item.name} — Quantité : ${qty}` + (hasPrice ? ` — Total : ${total} DT` : '');
+      msgEl.value = item.name;
     }
 
     const formEl = document.getElementById('contactForm');
@@ -1134,7 +1132,7 @@
 
   (async function init(){
     await loadSettings();
-    applyTheme(settingsCache.theme || 'atelier');
+    applyTheme(settingsCache.theme || 'blanc');
     renderContactInfo();
     renderContentBlocks();
     renderBranding();
