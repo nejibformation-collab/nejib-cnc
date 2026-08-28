@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nejib-kalboussi-cnc-enfant.netlify.app/sitemap.xml
