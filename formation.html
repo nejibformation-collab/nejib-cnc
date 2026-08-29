@@ -18,14 +18,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --navy:#0B2545;
-    --navy-dark:#071A33;
-    --orange:#FF6B35;
-    --brass:#D4A24C;
-    --paper:#F2EFE9;
-    --paper-rgb:242,239,233;
-    --btn-text:#071A33;
-    --gunmetal:#2D3142;
+    --navy:#FFFFFF;
+    --navy-dark:#F6F5F2;
+    --orange:#1D4E89;
+    --brass:#B8860B;
+    --paper:#1A1A1A;
+    --paper-rgb:26,26,26;
+    --btn-text:#FFFFFF;
+    --gunmetal:#EFEDE8;
     --line:rgba(var(--paper-rgb),0.14);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -899,7 +899,7 @@
     const phone = document.getElementById('phone').value.trim();
 
     let itemLine = selectedItemData
-      ? `Formation ${selectedItemData.name}\nChild ${selectedItemData.qty}`
+      ? `Formation\nInterested by ${selectedItemData.name}\nChild ${selectedItemData.qty}`
       : `Formation Stage éveil enfants`;
     if(selectedItemData && selectedItemData.hasPrice) itemLine += `\nTotal ${selectedItemData.total} DT`;
     if(selectedItemData && selectedItemData.img) itemLine += `\n${selectedItemData.img}`;
