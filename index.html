@@ -853,11 +853,18 @@
       statusEl.textContent = "Connexion à la base de données indisponible.";
       return;
     }
-    statusEl.textContent = "Envoi en cours...";
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const path = `branding/${key}-${Date.now()}.${ext}`;
+    statusEl.textContent = "Compression de l'image...";
+    let blob;
     try{
-      const { error: uploadError } = await supabaseClient.storage.from('images').upload(path, file, { upsert: true });
+      blob = await compressImage(file, 800, 0.85);
+    }catch(e){
+      console.error("Compression failed, using original file:", e);
+      blob = file;
+    }
+    statusEl.textContent = "Envoi en cours...";
+    const path = `branding/${key}-${Date.now()}.jpg`;
+    try{
+      const { error: uploadError } = await supabaseClient.storage.from('images').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if(uploadError){
         statusEl.textContent = "Erreur d'envoi : " + uploadError.message;
         return;
@@ -865,7 +872,7 @@
       const { data } = supabaseClient.storage.from('images').getPublicUrl(path);
       await saveSetting(key, data.publicUrl);
       renderBranding();
-      statusEl.textContent = "Photo mise à jour ✓";
+      statusEl.textContent = "Photo compressée et mise à jour ✓";
     }catch(e){
       console.error(e);
       statusEl.textContent = "Erreur réseau lors de l'envoi.";
@@ -1038,6 +1045,33 @@
     }catch(e){ console.error("Could not save inquiry:", e); }
   }
 
+  function compressImage(file, maxDim, quality){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        const img = new Image();
+        img.onload = ()=>{
+          let { width, height } = img;
+          if(width > maxDim || height > maxDim){
+            if(width > height){ height = Math.round(height * (maxDim / width)); width = maxDim; }
+            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob)=>{
+            if(blob) resolve(blob); else reject(new Error('Compression échouée'));
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function handleImageSelect(event){
     const file = event.target.files[0];
     if(!file) return;
@@ -1046,18 +1080,25 @@
       statusEl.textContent = "Connexion à la base de données indisponible.";
       return;
     }
-    statusEl.textContent = "Envoi en cours...";
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const path = `${TABLE_NAME}/${Date.now()}.${ext}`;
+    statusEl.textContent = "Compression de l'image...";
+    let blob;
     try{
-      const { error: uploadError } = await supabaseClient.storage.from('images').upload(path, file, { upsert: true });
+      blob = await compressImage(file, 1280, 0.82);
+    }catch(e){
+      console.error("Compression failed, using original file:", e);
+      blob = file;
+    }
+    statusEl.textContent = "Envoi en cours...";
+    const path = `${TABLE_NAME}/${Date.now()}.jpg`;
+    try{
+      const { error: uploadError } = await supabaseClient.storage.from('images').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if(uploadError){
         statusEl.textContent = "Erreur d'envoi : " + uploadError.message;
         return;
       }
       const { data } = supabaseClient.storage.from('images').getPublicUrl(path);
       document.getElementById('iImg').value = data.publicUrl;
-      statusEl.textContent = "Photo envoyée ✓";
+      statusEl.textContent = "Photo compressée et envoyée ✓";
     }catch(e){
       console.error(e);
       statusEl.textContent = "Erreur réseau lors de l'envoi.";
@@ -1280,7 +1321,11 @@
 
   function revealAdminToolbarIfSecret(){
     const params = new URLSearchParams(window.location.search);
+    const ADMIN_KEY = 'nejibcnc_admin_unlocked';
     if(params.get('admin') === 'nejib2026'){
+      localStorage.setItem(ADMIN_KEY, '1');
+    }
+    if(localStorage.getItem(ADMIN_KEY) === '1'){
       const bar = document.getElementById('adminToolbar');
       if(bar) bar.style.display = 'flex';
     }
