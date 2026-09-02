@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nejib CNC — Admin</title>
+<link rel="manifest" href="./manifest-admin.json">
+<link rel="icon" href="./assets/icon-192.png">
+<link rel="apple-touch-icon" href="./assets/icon-192.png">
+<meta name="theme-color" content="#B8860B">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Segoe UI',sans-serif;background:#F6F5F2;color:#1A1A1A;
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;padding:24px;text-align:center;
+  }
+  .box{max-width:380px;width:100%;}
+  .icon{width:80px;height:80px;border-radius:20px;margin:0 auto 20px;display:block;}
+  h1{font-size:1.3rem;margin-bottom:10px;}
+  p{color:#555;font-size:0.92rem;line-height:1.5;margin-bottom:24px;}
+  button, a.btn{
+    display:block;width:100%;padding:15px;margin-top:12px;
+    border:1px solid #1D4E89;background:#1D4E89;color:#fff;
+    font-weight:600;text-decoration:none;cursor:pointer;font-size:0.95rem;
+  }
+  button.secondary{background:transparent;color:#1D4E89;}
+  #status{font-size:0.82rem;color:#888;margin-top:16px;}
+</style>
+</head>
+<body>
+<div class="box">
+  <img src="./assets/icon-192.png" alt="Nejib CNC" class="icon">
+  <h1>Espace Admin — Nejib CNC</h1>
+  <p>Installe cette page comme application pour un accès direct au mode édition, sans avoir à retaper de lien.</p>
+  <button id="installBtn" style="display:none;" onclick="installApp()">📲 Installer l'app Admin</button>
+  <a class="btn secondary" href="./index.html?admin=nejib2026">Continuer sans installer →</a>
+  <div id="status"></div>
+</div>
+
+<script>
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBtn').style.display = 'block';
+  });
+
+  function installApp(){
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('status').textContent = "Application installée. Ouvre-la depuis ton écran d'accueil.";
+    });
+  }
+
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('status').textContent = "Application installée. Ouvre-la depuis ton écran d'accueil.";
+  });
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+</script>
+</body>
+</html>
