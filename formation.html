@@ -13,6 +13,10 @@
 <meta property="og:url" content="https://nejib-kalboussi-cnc-enfant.netlify.app/formation.html">
 <meta property="og:image" content="https://nejib-kalboussi-cnc-enfant.netlify.app/assets/logo-nejib-cnc.png">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./assets/icon-192.png">
+<link rel="apple-touch-icon" href="./assets/icon-192.png">
+<meta name="theme-color" content="#1D4E89">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -96,6 +100,12 @@
     transition:background .2s,color .2s;
   }
   .nav-cta:hover{background:transparent;color:var(--orange);}
+  .install-app-btn{
+    background:transparent;border:1px solid var(--orange);color:var(--orange);
+    padding:9px 16px;font-size:0.78rem;font-weight:600;letter-spacing:0.03em;
+    cursor:pointer;font-family:'IBM Plex Sans';margin-left:10px;
+  }
+  .install-app-btn:hover{background:var(--orange);color:var(--btn-text);}
 
   .hamburger-btn{
     display:none;background:none;border:1px solid rgba(255,255,255,0.2);
@@ -444,6 +454,7 @@
       <li><a href="index.html#contact">Contact</a></li>
     </ul>
     <a href="#contactForm" class="nav-cta">S'inscrire</a>
+    <button class="install-app-btn" id="installBtnDesktop" onclick="installApp()" style="display:none;">📲 App Android</button>
     <button class="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
     <div class="mobile-nav-panel" id="mobileNavPanel">
       <a href="index.html" onclick="closeMobileNav()">Accueil</a>
@@ -451,6 +462,7 @@
       <a href="formation.html" onclick="closeMobileNav()">Formation enfants</a>
       <a href="index.html#contact" onclick="closeMobileNav()">Contact</a>
       <a href="#contactForm" class="nav-cta" onclick="closeMobileNav()">S'inscrire</a>
+      <button class="install-app-btn" id="installBtnMobile" onclick="installApp()" style="display:none;">📲 Installer l'app Android</button>
     </div>
   </nav>
 </header>
@@ -1161,6 +1173,34 @@
     const { error } = await supabaseClient.from(TABLE_NAME).delete().eq('id', id);
     if(error){ alert("Erreur lors de la suppression : " + error.message); return; }
     renderItems();
+  }
+
+  let deferredInstallPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    document.querySelectorAll('.install-app-btn').forEach(btn => btn.style.display = 'inline-block');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    document.querySelectorAll('.install-app-btn').forEach(btn => btn.style.display = 'none');
+  });
+
+  function installApp(){
+    if(!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(() => {
+      deferredInstallPrompt = null;
+      document.querySelectorAll('.install-app-btn').forEach(btn => btn.style.display = 'none');
+    });
+  }
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(e => console.error('SW registration failed:', e));
+    });
   }
 
   function revealAdminToolbarIfSecret(){
