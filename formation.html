@@ -6,12 +6,12 @@
 <title>Formation Enfants — Nejib CNC / Mesarat Al-Abkariya | Nejib Kalboussi</title>
 <meta name="description" content="Stage d'été pour enfants (8-11 ans) par Nejib Kalboussi : développement des capacités mentales, ateliers Arduino et robotique, programme أنا الذكي / Mesarat Al-Abkariya.">
 <meta name="keywords" content="Nejib Kalboussi, formation enfants Tunisie, Mesarat Al-Abkariya, أنا الذكي, atelier Arduino enfants, développement cognitif enfants">
-<link rel="canonical" href="https://nejib-kalboussi-cnc-enfant.netlify.app/formation.html">
+<link rel="canonical" href="https://nejibformation-collab.github.io/nejib-cnc/formation.html">
 <meta property="og:title" content="Formation Enfants — Nejib CNC / Mesarat Al-Abkariya">
 <meta property="og:description" content="Stage d'été pour enfants (8-11 ans) : développement des capacités mentales, ateliers Arduino et robotique.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://nejib-kalboussi-cnc-enfant.netlify.app/formation.html">
-<meta property="og:image" content="https://nejib-kalboussi-cnc-enfant.netlify.app/assets/logo-nejib-cnc.png">
+<meta property="og:url" content="https://nejibformation-collab.github.io/nejib-cnc/formation.html">
+<meta property="og:image" content="https://nejibformation-collab.github.io/nejib-cnc/assets/logo-nejib-cnc.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./assets/icon-192.png">
@@ -250,6 +250,15 @@
     width:100%;aspect-ratio:4/3;object-fit:cover;
     background:rgba(var(--paper-rgb),0.04);
   }
+  .thumbs{display:flex;gap:6px;padding:8px 10px 0;overflow-x:auto;}
+  .thumbs button{flex:0 0 auto;width:52px;height:52px;padding:0;border:2px solid transparent;background:none;cursor:pointer;opacity:.7;}
+  .thumbs button.active{border-color:var(--orange);opacity:1;}
+  .thumbs img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .photo-thumb{position:relative;width:76px;height:76px;border:1px solid var(--line);}
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-thumb button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:none;background:#c0392b;color:#fff;font-size:14px;line-height:1;cursor:pointer;}
+  .photo-thumb span{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:.6rem;text-align:center;padding:1px 0;}
   .product-body{padding:20px;flex:1;display:flex;flex-direction:column;}
   .product-name{font-weight:600;font-size:1rem;margin-bottom:6px;}
   .product-desc{font-size:0.82rem;color:rgba(var(--paper-rgb),0.55);line-height:1.5;flex:1;margin-bottom:14px;}
@@ -517,13 +526,11 @@
       <input id="iPrice" type="text" placeholder="Ex: 40h / 20 séances">
     </div>
     <div class="field">
-      <label for="iImgFile">Photo (depuis votre téléphone)</label>
-      <input id="iImgFile" type="file" accept="image/*" onchange="handleImageSelect(event)">
+      <label for="iImgFile">Photos (vous pouvez en choisir plusieurs)</label>
+      <input id="iImgFile" type="file" accept="image/*" multiple onchange="handleImageSelect(event)">
       <div id="uploadStatus" style="font-size:0.78rem;color:rgba(var(--paper-rgb),0.5);margin-top:6px;"></div>
-    </div>
-    <div class="field">
-      <label for="iImg">Ou URL de l'image (optionnel)</label>
-      <input id="iImg" type="text" placeholder="https://...">
+      <div id="photoList" class="photo-list"></div>
+      <input id="iImg" type="hidden">
     </div>
     <div class="field">
       <label for="iDesc">Description</label>
@@ -921,7 +928,7 @@
       ? `Formation\nInterested by ${selectedItemData.name}\nChild ${selectedItemData.qty}`
       : `Formation Stage éveil enfants`;
     if(selectedItemData && selectedItemData.hasPrice) itemLine += `\nTotal ${selectedItemData.total} DT`;
-    if(selectedItemData && selectedItemData.img) itemLine += `\n${selectedItemData.img}`;
+    if(selectedItemData && selectedItemData.imgs && selectedItemData.imgs.length) itemLine += '\n' + selectedItemData.imgs.join('\n');
 
     const message = `Hello👏\n${itemLine}\nParent ${parentName}\nAge ${childAge}\nTel ${phone}`;
 
@@ -958,7 +965,7 @@
     const hasPrice = !isNaN(priceNum);
     const total = hasPrice ? (priceNum*qty) : null;
 
-    selectedItemData = { name: item.name, qty, total, img: item.img, hasPrice };
+    selectedItemData = { name: item.name, qty, total, imgs: parsePhotos(item.img), hasPrice };
 
     const hidden = document.getElementById('selectedItem');
     const notice = document.getElementById('selectedItemNotice');
@@ -1014,37 +1021,49 @@
     });
   }
 
+  let photos = [];
+  function parsePhotos(str){ return (str||"").split('|').map(s=>s.trim()).filter(Boolean); }
+  function setPhotos(arr){ photos = arr.slice(); renderPhotoList(); const el=document.getElementById('uploadStatus'); if(el) el.textContent=""; const f=document.getElementById('iImgFile'); if(f) f.value=""; }
+  function renderPhotoList(){
+    const box = document.getElementById('photoList');
+    if(!box) return;
+    box.innerHTML = photos.map((u,i)=>`<div class="photo-thumb"><img src="${escapeAttr(u)}" alt=""><button type="button" onclick="removePhoto(${i})" aria-label="Retirer">×</button>${i===0?'<span>Principale</span>':''}</div>`).join('');
+  }
+  function removePhoto(i){ photos.splice(i,1); renderPhotoList(); }
+  function swapMain(btn){
+    const card = btn.closest('.product-card');
+    const main = card.querySelector('img.product-img');
+    if(main) main.src = btn.querySelector('img').src;
+    card.querySelectorAll('.thumbs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
   async function handleImageSelect(event){
-    const file = event.target.files[0];
-    if(!file) return;
+    const files = Array.from(event.target.files || []);
+    if(!files.length) return;
     const statusEl = document.getElementById('uploadStatus');
     if(!supabaseClient){
       statusEl.textContent = "Connexion à la base de données indisponible.";
       return;
     }
-    statusEl.textContent = "Compression de l'image...";
-    let blob;
-    try{
-      blob = await compressImage(file, 1280, 0.82);
-    }catch(e){
-      console.error("Compression failed, using original file:", e);
-      blob = file;
+    let ok = 0, fail = 0;
+    for(let i=0;i<files.length;i++){
+      statusEl.textContent = `Envoi de la photo ${i+1}/${files.length}...`;
+      let blob;
+      try{ blob = await compressImage(files[i], 1280, 0.82); }
+      catch(e){ console.error("Compression failed, using original file:", e); blob = files[i]; }
+      const path = `${TABLE_NAME}/${Date.now()}-${i}-${Math.random().toString(36).slice(2,6)}.jpg`;
+      try{
+        const { error: uploadError } = await supabaseClient.storage.from('images').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+        if(uploadError){ console.error(uploadError); fail++; continue; }
+        const { data } = supabaseClient.storage.from('images').getPublicUrl(path);
+        photos.push(data.publicUrl);
+        ok++;
+        renderPhotoList();
+      }catch(e){ console.error(e); fail++; }
     }
-    statusEl.textContent = "Envoi en cours...";
-    const path = `${TABLE_NAME}/${Date.now()}.jpg`;
-    try{
-      const { error: uploadError } = await supabaseClient.storage.from('images').upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
-      if(uploadError){
-        statusEl.textContent = "Erreur d'envoi : " + uploadError.message;
-        return;
-      }
-      const { data } = supabaseClient.storage.from('images').getPublicUrl(path);
-      document.getElementById('iImg').value = data.publicUrl;
-      statusEl.textContent = "Photo compressée et envoyée ✓";
-    }catch(e){
-      console.error(e);
-      statusEl.textContent = "Erreur réseau lors de l'envoi.";
-    }
+    statusEl.textContent = fail ? `${ok} photo(s) envoyée(s) ✓, ${fail} échec(s).` : `${ok} photo(s) compressée(s) et envoyée(s) ✓`;
+    event.target.value = "";
   }
 
   function toggleMobileNav(){
@@ -1096,8 +1115,9 @@
     list.forEach(p=>{
       const card = document.createElement('div');
       card.className = 'product-card';
-      const imgHtml = p.img
-        ? `<img class="product-img" src="${escapeAttr(p.img)}" alt="${escapeAttr(p.name)}">`
+      const plist = parsePhotos(p.img);
+      const imgHtml = plist.length
+        ? `<img class="product-img" src="${escapeAttr(plist[0])}" alt="${escapeAttr(p.name)}">` + (plist.length>1 ? `<div class="thumbs">${plist.map((u,i)=>`<button type="button" class="${i===0?'active':''}" onclick="swapMain(this)"><img src="${escapeAttr(u)}" alt=""></button>`).join('')}</div>` : '')
         : `<div class="product-img" style="display:flex;align-items:center;justify-content:center;color:rgba(var(--paper-rgb),0.25);font-family:'IBM Plex Mono';font-size:0.75rem;">Pas d'image</div>`;
       const priceHtml = p.price ? `<div class="product-price">${escapeHtml(p.price)}</div>` : '';
       const priceNum = parseFloat((p.price||'').toString().replace(',','.'));
@@ -1138,13 +1158,13 @@
       document.getElementById('modalTitle').textContent = "Modifier";
       document.getElementById('iName').value = p.name;
       document.getElementById('iPrice').value = p.price||"";
-      document.getElementById('iImg').value = p.img||"";
+      setPhotos(parsePhotos(p.img));
       document.getElementById('iDesc').value = p.description||"";
     } else {
       document.getElementById('modalTitle').textContent = "Ajouter";
       document.getElementById('iName').value = "";
       document.getElementById('iPrice').value = "";
-      document.getElementById('iImg').value = "";
+      setPhotos([]);
       document.getElementById('iDesc').value = "";
     }
   }
@@ -1154,7 +1174,7 @@
     const name = document.getElementById('iName').value.trim();
     if(!name){ alert("Le nom est obligatoire."); return; }
     const price = document.getElementById('iPrice').value.trim();
-    const img = document.getElementById('iImg').value.trim();
+    const img = photos.join('|');
     const description = document.getElementById('iDesc').value.trim();
     const editId = document.getElementById('editId').value;
     let error;
